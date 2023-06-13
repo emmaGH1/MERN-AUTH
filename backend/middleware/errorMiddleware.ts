@@ -1,0 +1,32 @@
+import { Request, Response, NextFunction } from "express";
+import { Error as MongooseError, CastError } from 'mongoose'
+
+interface ErrorProps {
+    req: Request
+    res: Response
+    next: NextFunction
+    err: MongooseError
+}
+
+const notFound = ({ req, res, next }: ErrorProps) => {
+    const error = new Error(`Not Found - ${req.originalUrl}`)
+    res.status(404)
+    next(error)
+}
+
+const errorHandler = ({ err, req, res, next }: ErrorProps) => {
+    let statusCode = res.statusCode === 200 ? 500 : res.statusCode
+    let message = err?.message
+
+    if (err.name === 'CastError' && (err as CastError).kind === 'objectId') {
+        statusCode = 404 
+        message = 'Resource not found'
+    }
+
+    res.status(statusCode).json({
+        message,
+        stack: process.env.NODE_ENV === 'production' ? null : err.stack
+    })
+}
+
+export { notFound, errorHandler }
