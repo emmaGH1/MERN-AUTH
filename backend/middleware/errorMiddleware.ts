@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { Error as MongooseError, CastError } from 'mongoose'
+import { CastError } from 'mongoose'
 
 interface ErrorProps {
     req: Request
     res: Response
     next: NextFunction
-    err: MongooseError
+    err: Error
 }
 
 const notFound = ({ req, res, next }: ErrorProps) => {
@@ -16,7 +16,7 @@ const notFound = ({ req, res, next }: ErrorProps) => {
 
 const errorHandler = ({ err, req, res, next }: ErrorProps) => {
     let statusCode = res.statusCode === 200 ? 500 : res.statusCode
-    let message = err?.message
+    let message = err.message
 
     if (err.name === 'CastError' && (err as CastError).kind === 'objectId') {
         statusCode = 404 
