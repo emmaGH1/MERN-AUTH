@@ -14,6 +14,8 @@ const authUser = asyncHandler(async (req: Request, res: Response) => {
 // @access Public
 
 const registerUser = asyncHandler(async (req: Request, res: Response) => {
+    
+    
     res.status(200).json({ message: 'Register User' })
 })
 
@@ -30,7 +32,7 @@ const logOutUser = asyncHandler(async (req: Request, res: Response) => {
 // @access Private
 
 const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
-    res.status(200).json({ message: 'Register User' })
+    res.status(200).json({ message: 'User profile' })
 })
  
 // @desc Update user profile
