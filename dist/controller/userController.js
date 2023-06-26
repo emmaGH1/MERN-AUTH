@@ -22,9 +22,9 @@ const userModel_1 = __importDefault(require("../models/userModel"));
 const authUser = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     const user = yield userModel_1.default.findOne({ email });
-    if (user) {
+    if (user && (yield user.matchPassword(password))) {
         (0, generateToken_1.default)(res, user._id);
-        res.status(201).json({
+        res.json({
             _id: user._id,
             name: user.name,
             email: user.email,
@@ -32,7 +32,7 @@ const authUser = (0, express_async_handler_1.default)((req, res) => __awaiter(vo
     }
     else {
         res.status(401);
-        throw new Error('Invalid email or passsword');
+        throw new Error('Invalid email or password');
     }
 }));
 exports.authUser = authUser;
@@ -43,8 +43,8 @@ const registerUser = (0, express_async_handler_1.default)((req, res) => __awaite
     const { name, email, password } = req.body;
     const userExists = yield userModel_1.default.findOne({ email });
     if (userExists) {
-        res.status(400);
-        throw new Error('User already exists');
+        res.status(400).json({ error: 'User already exists' });
+        return;
     }
     const user = yield userModel_1.default.create({
         name,
@@ -60,8 +60,7 @@ const registerUser = (0, express_async_handler_1.default)((req, res) => __awaite
         });
     }
     else {
-        res.status(400);
-        throw new Error('Invalid user data');
+        res.status(400).json({ error: 'Invalid user data' });
     }
 }));
 exports.registerUser = registerUser;
@@ -69,7 +68,11 @@ exports.registerUser = registerUser;
 // route POST /api/users/logout
 // @access Public
 const logOutUser = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.status(200).json({ message: 'log out user' });
+    res.cookie('jwt', '', {
+        httpOnly: true,
+        expires: new Date(0),
+    });
+    res.status(200).json({ message: 'User logged out' });
 }));
 exports.logOutUser = logOutUser;
 // @desc Get user profile
