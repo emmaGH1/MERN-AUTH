@@ -16,9 +16,6 @@ exports.updateUserProfile = exports.getUserProfile = exports.logOutUser = export
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const generateToken_1 = __importDefault(require("../utils/generateToken"));
 const userModel_1 = __importDefault(require("../models/userModel"));
-// @desc Auth user/set token
-// route POST /api/users/auth
-// @access Public
 const authUser = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     const user = yield userModel_1.default.findOne({ email });
@@ -79,13 +76,37 @@ exports.logOutUser = logOutUser;
 // route GET /api/users/profile
 // @access Private
 const getUserProfile = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.status(200).json({ message: 'User profile' });
+    var _a, _b, _c;
+    const user = {
+        _id: (_a = req.user) === null || _a === void 0 ? void 0 : _a._id,
+        name: (_b = req.user) === null || _b === void 0 ? void 0 : _b.name,
+        email: (_c = req.user) === null || _c === void 0 ? void 0 : _c.email
+    };
+    res.status(200).json(user);
 }));
 exports.getUserProfile = getUserProfile;
 // @desc Update user profile
 // route PUT /api/users/profile
 // @access Private
 const updateUserProfile = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.status(200).json({ message: 'Update user profile' });
+    var _d;
+    const user = yield userModel_1.default.findById((_d = req.user) === null || _d === void 0 ? void 0 : _d._id);
+    if (user) {
+        user.name = req.body.name || user.name;
+        user.email = req.body.email || user.email;
+        if (req.body.password) {
+            user.password = req.body.password;
+        }
+        const updatedUser = yield user.save();
+        res.json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+        });
+    }
+    else {
+        res.status(404);
+        throw new Error('User not found');
+    }
 }));
 exports.updateUserProfile = updateUserProfile;
