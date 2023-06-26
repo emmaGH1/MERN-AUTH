@@ -1,11 +1,15 @@
 import { Request, Response } from "express";
 import asyncHandler from 'express-async-handler'
 import generateToken from "../utils/generateToken";
-import User from "../models/userModel";
+import User, { UserDoc } from "../models/userModel";
 
 // @desc Auth user/set token
 // route POST /api/users/auth
 // @access Public
+
+interface ExtendUser extends Request {
+    user?: UserDoc | null
+}
 
 const authUser = asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
@@ -76,9 +80,14 @@ const logOutUser = asyncHandler(async (req: Request, res: Response) => {
 // route GET /api/users/profile
 // @access Private
 
-const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
-    res.status(200).json({ message: 'User profile' })
-})
+const getUserProfile = asyncHandler(async (req: ExtendUser, res: Response) => {
+    const user = {
+        _id: req.user?._id,
+        name: req.user?.name,
+        email: req.user?.email
+    }
+    res.status(200).json(user)
+}) 
  
 // @desc Update user profile
 // route PUT /api/users/profile
